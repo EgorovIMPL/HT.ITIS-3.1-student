@@ -1,6 +1,9 @@
+using System.Windows.Input;
+using ICommand = Dotnet.Homeworks.Infrastructure.Cqrs.Commands.ICommand;
+
 namespace Dotnet.Homeworks.Features.Products.Commands.DeleteProduct;
 
-public class DeleteProductByGuidCommand //TODO: Inherit certain interface 
+public class DeleteProductByGuidCommand : ICommand
 {
     public Guid Guid { get; init; }
 

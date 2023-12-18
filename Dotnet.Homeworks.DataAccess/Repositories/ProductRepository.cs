@@ -1,27 +1,49 @@
+using Dotnet.Homeworks.Data.DatabaseContext;
 using Dotnet.Homeworks.Domain.Abstractions.Repositories;
 using Dotnet.Homeworks.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Dotnet.Homeworks.DataAccess.Repositories;
 
 public class ProductRepository : IProductRepository
 {
-    public Task<IEnumerable<Product>> GetAllProductsAsync(CancellationToken cancellationToken)
+    private readonly AppDbContext _appDbContext;
+
+    public ProductRepository(AppDbContext appDbContext)
     {
-        throw new NotImplementedException();
+        _appDbContext = appDbContext;
     }
 
-    public Task DeleteProductByGuidAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<IEnumerable<Product>> GetAllProductsAsync(CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        return await _appDbContext.Products.ToArrayAsync(cancellationToken);
     }
 
-    public Task UpdateProductAsync(Product product, CancellationToken cancellationToken)
+    public async Task DeleteProductByGuidAsync(Guid id, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var product = await _appDbContext.Products.FirstOrDefaultAsync(x => x.Id == id,cancellationToken);
+        if (product != null)
+        {
+            _appDbContext.Products.Remove(product);
+            await _appDbContext.SaveChangesAsync(cancellationToken);
+        }
     }
 
-    public Task<Guid> InsertProductAsync(Product product, CancellationToken cancellationToken)
+    public async Task UpdateProductAsync(Product product, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var currentProduct = await _appDbContext.Products.FirstOrDefaultAsync(x => x.Id == product.Id, cancellationToken);
+        if (currentProduct != null)
+        {
+            currentProduct.Name = product.Name;
+            _appDbContext.Products.Update(currentProduct);
+            await _appDbContext.SaveChangesAsync(cancellationToken);
+        }
+    }
+
+    public async Task<Guid> InsertProductAsync(Product product, CancellationToken cancellationToken)
+    {
+        await _appDbContext.Products.AddAsync(product,cancellationToken);
+        await _appDbContext.SaveChangesAsync(cancellationToken);
+        return await Task.FromResult(product.Id);
     }
 }
