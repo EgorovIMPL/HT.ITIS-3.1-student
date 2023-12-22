@@ -23,6 +23,12 @@ services:
     
   dotnet_minio:
     image: minio/minio:latest
+    container_name: dotnet_minio
+    ports:
+      - "9000:9000"
+    environment:
+      MINIO_ROOT_USER: minioUser
+      MINIO_ROOT_PASSWORD: minioPassword
     
   dotnet_mongodb:
     image: mongo:latest
@@ -69,4 +75,17 @@ services:
       - dotnet_rabbitmq
     
   dotnet_storage:
-    image: dotnet-web
+    image: dotnet_storage
+    container_name: dotnet_storage
+    build:
+      dockerfile: Dotnet.Homeworks.Storage.API/Dockerfile
+    ports:
+      - "8082:80"
+    environment:
+      MinioConfig__Username: minioUser
+      MinioConfig__Password: minioPassword
+      MinioConfig__Endpoint: dotnet_minio
+      MinioConfig__Port: 9000
+      MinioConfig__WithSsl: false
+    depends_on:
+      - dotnet_minio
